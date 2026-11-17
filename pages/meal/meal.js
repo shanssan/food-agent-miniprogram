@@ -41,6 +41,8 @@ Page({
 
   newMeal() {
     if (this.data.busy) return;
+    // 同一餐的消息与反馈共用 sessionId。原后端用它关联多轮状态；
+    // 开始新的一餐时换 ID，并清空页面上的候选和问答。
     this.sessionId = `mini-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     this.finishQuestion = null;
     this.guidedRequest = null;
@@ -256,6 +258,8 @@ Page({
   },
 
   async findGuidedDishes(criteria, online = false) {
+    // 问答结束后一次提交结构化条件。原后端先查目录，用户确认后才可联网；
+    // 离线演示里 online 只控制是否请求一组模拟补充候选。
     this.clearGuided();
     if (criteria.priority && criteria.priority !== "都一样重要" && !priorityChoices(criteria).includes(criteria.priority)) {
       criteria = { ...criteria, priority: null };

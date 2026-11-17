@@ -12,6 +12,8 @@ function priorityChoices(criteria) {
   ].filter(Boolean);
 }
 
+// 每次 yield 提供题目、选项和交互方式，页面用 next(answers) 送回答案。
+// 根据用户选的目标继续提问，把答案写进同一个筛选对象，最后交给找菜接口。
 function* guidedSteps(request) {
   const goals = yield ["这顿最想满足什么？", ["填饱肚子", "满足馋劲", "吃得舒服", "换换口味"], { multi: true, skip: true }];
   for (const goal of goals) {

@@ -1,3 +1,5 @@
+// 离线模拟层。页面沿用原后端的路由和主要字段，request() 在进程内分发，
+// 让对话、找菜和画像页面可以用相同的调用方式演示。所有样例数据均为虚构。
 const accessKey = "food-agent-demo-access";
 const profileKey = "food-agent-demo-profile";
 
@@ -28,6 +30,8 @@ function avoidsIngredients(dish, excluded) {
   return !excluded.some((item) => dish.name.includes(item) || dish.ingredients.some((ingredient) => ingredient.includes(item)));
 }
 
+// 模拟对话推荐。原后端通过 LangGraph 编排意图解析、画像读取和排序。
+// 这里用预算和少量口味关键词筛选固定菜单，并应用本地的忌口和商家屏蔽。
 function recommend(message) {
   const profile = getProfile();
   const budget = message.match(/(?:预算\s*)?(\d+(?:\.\d+)?)\s*(?:元|块)/);
@@ -46,6 +50,8 @@ function recommend(message) {
   };
 }
 
+// 结构化条件来自选项问答。local_only 区分首次筛选与用户主动请求补充候选。
+// 保留 web_needed 状态供页面显示后续按钮，第二次调用仍在本地生成模拟结果。
 function guidedMeal(data) {
   const { dish_name, local_only, tastes = [], rejected_names = [], excluded_names = [],
     excluded_tastes = [], ingredients = [], excluded_ingredients = [] } = data;
@@ -95,6 +101,8 @@ function respond(path, method, data) {
   throw new Error("该操作没有离线演示数据。");
 }
 
+// 页面等待 result；用户点「停止等待」或离开页面时可以 abort()。
+// 找菜的短暂延迟用于体验取消操作，定时器触发后才读取或写入模拟数据。
 function request(path, method = "GET", data) {
   let timer;
   let rejectResult;
@@ -116,6 +124,7 @@ function request(path, method = "GET", data) {
   };
 }
 
+// 返回值是本地布尔标记。DEMO 用来展示进入流程，实际账号鉴权由原后端负责。
 function accessToken() { return wx.getStorageSync(accessKey); }
 
 async function enterAccess(code) {
