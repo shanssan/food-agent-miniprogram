@@ -1,0 +1,134 @@
+<include src="../../templates/meal-background.wxml" />
+<view wx:if="{{!signedIn}}" class="wrap invite-page">
+  <view class="invite-card">
+    <view class="heading" role="heading">离线演示</view>
+    <form bindsubmit="redeemInvite">
+      <view class="invite-fields">
+        <input class="field field-input invite-input" name="code" maxlength="128"
+          placeholder="输入演示码 DEMO" placeholder-class="invite-placeholder" aria-label="演示码" />
+        <button class="primary invite-submit" form-type="submit" disabled="{{inviteBusy}}" loading="{{inviteBusy}}">
+          {{inviteBusy ? '正在验证' : '进入演示'}}
+        </button>
+        <view wx:if="{{inviteError}}" class="invite-error error" role="status">{{inviteError}}</view>
+      </view>
+    </form>
+  </view>
+</view>
+<view wx:else class="wrap">
+  <view class="spread masthead">
+    <text class="wordmark">{{starters ? '' : '本餐对话'}}</text>
+    <view class="row mast-actions">
+      <button wx:if="{{!starters}}" class="quiet" bindtap="newMeal" disabled="{{!!busy}}">新的一餐</button>
+      <button class="quiet" bindtap="openProfile" disabled="{{!!busy}}">口味画像</button>
+      <button class="quiet" bindtap="signOut" disabled="{{!!busy}}">退出演示</button>
+    </view>
+  </view>
+
+  <view wx:if="{{starters}}" class="hero">
+    <view class="hero-content">
+      <view class="hero-title"><view>今天</view><view>吃什么？</view></view>
+      <view class="hero-copy">试试输入口味或预算，看看模拟推荐。</view>
+    </view>
+    <view class="brand-art" aria-hidden="true">
+      <image class="brand-image" src="/assets/brand-mark.jpg" mode="aspectFit" />
+    </view>
+  </view>
+
+  <view wx:if="{{!starters}}" class="conversation">
+    <view wx:if="{{turns.length > (question ? 1 : 0)}}" class="spread conversation-label">
+      <text class="muted">对话记录</text>
+      <button wx:if="{{dishes.length || terms.length}}" class="quiet" bindtap="jumpToResults">看推荐</button>
+    </view>
+    <scroll-view wx:if="{{turns.length > (question ? 1 : 0)}}" class="chat-log" scroll-y scroll-into-view="{{lastTurn}}">
+      <view class="turns">
+        <view wx:for="{{turns}}" wx:key="id" id="{{item.id}}">
+          <view wx:if="{{!question || item.id !== lastTurn}}" class="turn-line {{item.sender}}">
+            <view class="turn {{item.error ? 'error' : ''}}"><text selectable>{{item.text}}</text></view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{options.length}}" class="choices controls">
+      <button wx:for="{{options}}" wx:key="label" class="glass-option" hover-class="glass-pressed"
+        data-index="{{index}}" bindtap="sendOption" disabled="{{!!busy}}">
+        <text>{{item.label}}</text><view class="chevron" aria-hidden="true"></view>
+      </button>
+    </view>
+    <view wx:if="{{question}}" class="question">
+      <view class="heading">{{question.text}}</view>
+      <view wx:if="{{question.choices.length}}" class="choices controls">
+        <button wx:for="{{question.choices}}" wx:key="label" data-index="{{index}}" bindtap="answerChoice"
+          class="glass-option {{item.selected ? 'selected' : ''}}" hover-class="glass-pressed"
+          aria-label="{{item.label + (item.selected ? '，已选中' : '')}}" disabled="{{!!busy}}">
+          <text>{{item.label}}</text><view class="chevron" aria-hidden="true"></view>
+        </button>
+      </view>
+      <input wx:if="{{question.free}}" class="field field-input controls" value="{{question.input}}" maxlength="200"
+        aria-label="{{question.text}}" placeholder="输入内容，多项用顿号分隔" bindinput="inputAnswer" bindconfirm="continueAnswer" confirm-type="next" />
+      <view wx:if="{{question.multi || question.free || question.skip}}" class="row controls">
+        <button wx:if="{{question.multi || question.free}}" class="primary" bindtap="continueAnswer">继续</button>
+        <button wx:if="{{question.skip}}" class="quiet" bindtap="skipAnswer">跳过</button>
+      </view>
+      <view wx:if="{{question.error}}" class="error controls">{{question.error}}</view>
+    </view>
+    <view wx:if="{{guidedActions.length && !dishes.length && !terms.length}}" class="row controls">
+      <button wx:for="{{guidedActions}}" wx:key="*this" data-label="{{item}}" bindtap="useGuidedAction" disabled="{{!!busy}}">{{item}}</button>
+    </view>
+  </view>
+
+  <view wx:if="{{busy}}" class="spread activity">
+    <text>{{busy}}</text>
+    <button wx:if="{{searching}}" class="quiet" bindtap="stopSearch">停止等待</button>
+  </view>
+
+  <view id="composer" class="composer {{starters ? '' : 'compact'}}">
+    <label wx:if="{{starters}}" for="meal-draft">这顿的用餐需求</label>
+    <view class="composer-input">
+      <textarea id="meal-draft" value="{{draft}}" maxlength="2000" auto-height
+        aria-label="这顿的用餐需求" placeholder-class="draft-placeholder"
+        placeholder="{{starters ? '例如：我在示例社区，想吃清淡一点' : '补充这顿的需求'}}" bindinput="inputDraft" />
+      <button class="primary send" bindtap="sendDraft" disabled="{{!!busy || !draft}}">{{starters ? '帮我找菜' : '发送'}}</button>
+    </view>
+  </view>
+
+  <button wx:if="{{starters}}" class="guided-entry glass-option" hover-class="glass-pressed" bindtap="startGuidedMeal" disabled="{{!!busy}}">
+    <view><view class="guided-label">选项找菜</view><view class="muted">跟着提示选口味、菜名和忌口</view></view>
+    <view class="chevron" aria-hidden="true"></view>
+  </button>
+
+  <view wx:if="{{!starters && (dishes.length || terms.length || emptyTitle === '没有匹配的候选')}}" class="results" id="results">
+    <view class="spread results-header">
+      <text class="heading">这顿推荐</text>
+      <text wx:if="{{dishes.length || terms.length}}" class="count">{{dishes.length + terms.length}} 项</text>
+    </view>
+    <view wx:if="{{guidedActions.length && (dishes.length || terms.length)}}" class="row result-filters">
+      <button wx:for="{{guidedActions}}" wx:key="*this" data-label="{{item}}" bindtap="useGuidedAction" disabled="{{!!busy}}">{{item}}</button>
+    </view>
+    <view wx:if="{{!dishes.length && !terms.length}}" class="result">
+      <view class="dish-title">{{emptyTitle}}</view>
+      <view class="muted">{{emptyDetail}}</view>
+    </view>
+    <view wx:for="{{dishes}}" wx:key="candidate_id" class="result">
+      <view class="spread dish-line"><text class="dish-title">{{item.name}}</text><text class="price">{{item.price}}</text></view>
+      <view wx:if="{{item.reason}}">{{item.reason}}</view>
+      <view class="muted">{{item.context}}</view>
+      <view wx:if="{{item.month_order_count >= 2}}" class="muted">本月已点 {{item.month_order_count}} 次</view>
+      <view wx:if="{{item.candidate_id}}" class="row controls">
+        <button class="primary" data-index="{{index}}" bindtap="feedback" disabled="{{!!busy || !recommendationId}}">选择这项</button>
+        <button class="quiet" data-index="{{index}}" bindtap="openFeedback" disabled="{{!!busy || !recommendationId}}">更多反馈</button>
+      </view>
+    </view>
+    <view wx:for="{{terms}}" wx:key="name" class="result">
+      <view class="dish-title">{{item.name}}</view>
+      <view wx:if="{{item.reason}}">{{item.reason}}</view>
+      <view class="muted">{{item.origin}}</view>
+      <view class="muted">这些菜品仅供演示。</view>
+      <view wx:if="{{item.sourceUrl || item.selectable || item.chosen}}" class="row controls">
+        <button wx:if="{{item.selectable}}" class="primary" data-index="{{index}}" bindtap="chooseTerm" disabled="{{!!busy}}">就吃这道</button>
+        <text wx:if="{{item.chosen}}" class="chosen">已选这道</text>
+        <button wx:if="{{item.sourceUrl}}" class="quiet" data-index="{{index}}" bindtap="copySource">复制网页来源</button>
+      </view>
+    </view>
+  </view>
+</view>

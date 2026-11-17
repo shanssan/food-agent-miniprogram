@@ -1,0 +1,72 @@
+page {
+  --paper: #f8f6ed;
+  --ink: #20332a;
+  --brand: #206e48;
+  --line: #d7ded4;
+  --muted: #4d6256;
+  --white: #fffdfa;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 30rpx;
+  line-height: 1.5;
+}
+button {
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 88rpx;
+  padding: 16rpx 24rpx;
+  border: 1rpx solid var(--line);
+  border-radius: 20rpx;
+  background: var(--white);
+  color: var(--brand);
+  font-size: 28rpx;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+button::after { border: 0; }
+button[disabled] { opacity: .55; }
+button.primary { background: var(--brand); border-color: var(--brand); color: white; font-weight: 650; }
+button.quiet { background: transparent; border-color: transparent; }
+button.button-hover { opacity: .75; }
+.meal-background {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1525rpx;
+  overflow: hidden;
+  opacity: .34;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(transparent 47%, #000 73%, #000 93%, transparent), linear-gradient(to right, transparent 23%, #000 52%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(transparent 47%, #000 73%, #000 93%, transparent), linear-gradient(to right, transparent 23%, #000 52%);
+  mask-composite: intersect;
+}
+.meal-background-image {
+  position: absolute;
+  right: -100rpx;
+  bottom: -21rpx;
+  width: 690rpx;
+  height: 920rpx;
+}
+.wrap { position: relative; box-sizing: border-box; max-width: 860rpx; margin: auto; padding: 12rpx 36rpx calc(48rpx + env(safe-area-inset-bottom)); }
+.row { display: flex; flex-wrap: wrap; gap: 12rpx; align-items: center; }
+.spread { display: flex; justify-content: space-between; gap: 16rpx; align-items: center; }
+.heading { font-size: 38rpx; font-weight: 750; line-height: 1.25; }
+.muted { color: var(--muted); font-size: 26rpx; }
+.error { color: #9b2d22; }
+.field {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 18rpx 20rpx;
+  border: 1rpx solid var(--line);
+  border-radius: 20rpx;
+  background: var(--white);
+  color: var(--ink);
+  line-height: 1.5;
+  font-size: 30rpx;
+}
+.field-input { height: 88rpx; }

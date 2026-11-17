@@ -1,0 +1,3 @@
+<view class="meal-background" aria-hidden="true">
+  <image class="meal-background-image" src="/assets/meal-background.jpg" mode="aspectFit" />
+</view>

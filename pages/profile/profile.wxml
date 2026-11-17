@@ -1,0 +1,36 @@
+<include src="../../templates/meal-background.wxml" />
+<view class="wrap">
+  <view class="profile-intro">
+    <view class="profile-title">我的口味</view>
+    <view class="muted">以下是虚构的示例画像，编辑结果只保存到本地。</view>
+  </view>
+  <form wx:if="{{ready}}" bindsubmit="saveProfile">
+    <view wx:for="{{fields}}" wx:key="key" class="profile-field">
+      <label for="{{item.key}}">{{item.label}}</label>
+      <input id="{{item.key}}" class="field field-input" value="{{values[item.key]}}"
+        aria-label="{{item.label}}" data-key="{{item.key}}" bindinput="updateField" disabled="{{busy}}" />
+    </view>
+    <view class="muted">多项用顿号或逗号分隔。清空后保存可删除该项。</view>
+    <view class="roles">
+      <view class="field-label">身份</view>
+      <checkbox-group class="row" bindchange="updateRoles">
+        <label><checkbox value="大学生" color="#206e48" checked="{{roles[0] === '大学生' || roles[1] === '大学生'}}" disabled="{{busy}}" />大学生</label>
+        <label><checkbox value="在职" color="#206e48" checked="{{roles[0] === '在职' || roles[1] === '在职'}}" disabled="{{busy}}" />在职</label>
+      </checkbox-group>
+    </view>
+    <button form-type="submit" class="primary save" disabled="{{busy}}">保存口味画像</button>
+  </form>
+  <view wx:if="{{notice || error}}" class="profile-status">
+    <view wx:if="{{notice}}">{{notice}}</view>
+    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <button wx:if="{{error && !ready}}" bindtap="loadProfile" disabled="{{busy}}">重试</button>
+  </view>
+  <view wx:if="{{ready}}" class="shops">
+    <view class="heading">已屏蔽商家</view>
+    <view wx:if="{{!shops.length}}" class="muted shop">暂无屏蔽商家</view>
+    <view wx:for="{{shops}}" wx:key="merchant_key" class="spread shop">
+      <text>{{item.name}}</text>
+      <button class="quiet" data-key="{{item.merchant_key}}" bindtap="restoreMerchant" disabled="{{busy}}">撤销屏蔽</button>
+    </view>
+  </view>
+</view>

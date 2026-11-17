@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "pages/meal/meal",
+    "pages/profile/profile"
+  ],
+  "lazyCodeLoading": "requiredComponents",
+  "window": {
+    "navigationBarTitleText": "食觅啊 · 离线演示",
+    "navigationBarBackgroundColor": "#f8f6ed",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f8f6ed"
+  }
+}
